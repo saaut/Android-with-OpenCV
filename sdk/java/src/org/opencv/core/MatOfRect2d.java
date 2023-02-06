@@ -31,7 +31,7 @@ public class MatOfRect2d extends Mat {
         //FIXME: do we need release() here?
     }
 
-    public MatOfRect2d(Rect2d...a) {
+    public MatOfRect2d(Rect2d[] a) {
         super();
         fromArray(a);
     }
@@ -41,7 +41,7 @@ public class MatOfRect2d extends Mat {
             super.create(elemNumber, 1, CvType.makeType(_depth, _channels));
     }
 
-    public void fromArray(Rect2d...a) {
+    public void fromArray(Rect2d[] a) {
         if(a==null || a.length==0)
             return;
         int num = a.length;
