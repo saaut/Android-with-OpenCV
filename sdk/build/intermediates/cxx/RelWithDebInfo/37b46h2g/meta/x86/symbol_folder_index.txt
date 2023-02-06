@@ -1,0 +1,1 @@
+C:\Androidstudio\Camera_java-master\sdk\build\intermediates\cxx\RelWithDebInfo\37b46h2g\obj\x86
