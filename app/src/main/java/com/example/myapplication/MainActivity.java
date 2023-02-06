@@ -10,14 +10,15 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.WindowManager;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
-import java.security.Permissions;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,8 +31,10 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "opencv";
     private Mat matInput;
     private Mat matResult;
+    boolean startCanny = false;
 
-    private CameraBridgeViewBase mOpenCvCameraView;
+    private CameraBridgeViewBase cameraBridgeViewBase;
+    BaseLoaderCallback baseLoaderCallback;
 
     public native void ConvertRGBtoGray(long matAddrInput, long matAddrResult);
 
@@ -41,7 +44,16 @@ public class MainActivity extends AppCompatActivity
         System.loadLibrary("native-lib");
     }
 
+    public void Canny(View Button){
 
+        if (startCanny == false){
+            startCanny = true;
+        }
+        else{
+            startCanny = false;
+
+        }
+    }
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -49,7 +61,7 @@ public class MainActivity extends AppCompatActivity
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS:
                 {
-                    mOpenCvCameraView.enableView();
+                    cameraBridgeViewBase.enableView();
                 } break;
                 default:
                 {
@@ -63,6 +75,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -71,18 +84,39 @@ public class MainActivity extends AppCompatActivity
 
         setContentView(R.layout.activity_main);
 
-        mOpenCvCameraView = (CameraBridgeViewBase)findViewById(R.id.activity_surface_view);
-        mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
-        mOpenCvCameraView.setCvCameraViewListener(this);
-        mOpenCvCameraView.setCameraIndex(0); // front-camera(1),  back-camera(0)
+        cameraBridgeViewBase = (CameraBridgeViewBase)findViewById(R.id.activity_surface_view);
+        cameraBridgeViewBase.setVisibility(SurfaceView.VISIBLE);
+        cameraBridgeViewBase.setCvCameraViewListener(this);
+        cameraBridgeViewBase.setCameraIndex(0); // front-camera(1),  back-camera(0)
+
+        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        baseLoaderCallback = new BaseLoaderCallback(this) {
+            @Override
+            public void onManagerConnected(int status) {
+                super.onManagerConnected(status);
+
+                switch(status){
+
+                    case BaseLoaderCallback.SUCCESS:
+                        cameraBridgeViewBase.enableView();
+                        break;
+                    default:
+                        super.onManagerConnected(status);
+                        break;
+                }
+
+
+            }
+
+        };
     }
 
     @Override
     public void onPause()
     {
         super.onPause();
-        if (mOpenCvCameraView != null)
-            mOpenCvCameraView.disableView();
+        if (cameraBridgeViewBase != null)
+            cameraBridgeViewBase.disableView();
     }
 
     @Override
@@ -103,8 +137,8 @@ public class MainActivity extends AppCompatActivity
     public void onDestroy() {
         super.onDestroy();
 
-        if (mOpenCvCameraView != null)
-            mOpenCvCameraView.disableView();
+        if (cameraBridgeViewBase != null)
+            cameraBridgeViewBase.disableView();
     }
 
     @Override
@@ -120,20 +154,23 @@ public class MainActivity extends AppCompatActivity
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
 
-        matInput = inputFrame.rgba();
+        Mat frame = inputFrame.rgba();
 
-        if ( matResult == null )
+        if (startCanny == true) {
 
-            matResult = new Mat(matInput.rows(), matInput.cols(), matInput.type());
+            Imgproc.cvtColor(frame, frame, Imgproc.COLOR_RGBA2GRAY);
+            Imgproc.Canny(frame, frame, 100, 80);
 
-        ConvertRGBtoGray(matInput.getNativeObjAddr(), matResult.getNativeObjAddr());
+        }
 
-        return matResult;
+
+
+        return frame;
     }
 
 
     protected List<? extends CameraBridgeViewBase> getCameraViewList() {
-        return Collections.singletonList(mOpenCvCameraView);
+        return Collections.singletonList(cameraBridgeViewBase);
     }
 
 
