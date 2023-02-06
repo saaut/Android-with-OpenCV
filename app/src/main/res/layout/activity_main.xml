@@ -12,15 +12,15 @@
         android:id="@+id/activity_surface_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"
+        android:visibility="visible"
         opencv:camera_id="any" />
 
     <Button
         android:id="@+id/button"
         android:layout_width="261dp"
         android:layout_height="wrap_content"
-        android:onClick="Canny"
-        android:text="Button"
+        android:onClick="YOLO"
+        android:text="YOLO"
         opencv:layout_constraintBottom_toBottomOf="parent"
         opencv:layout_constraintEnd_toEndOf="parent"
         opencv:layout_constraintStart_toStartOf="parent"
