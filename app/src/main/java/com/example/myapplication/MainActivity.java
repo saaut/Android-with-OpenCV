@@ -1,7 +1,10 @@
 package com.example.myapplication;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.annotation.TargetApi;
 import android.content.pm.PackageManager;
@@ -28,6 +31,11 @@ import org.opencv.dnn.Dnn;
 import org.opencv.dnn.Net;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.utils.Converters;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,15 +63,14 @@ public class MainActivity extends AppCompatActivity
         System.loadLibrary("native-lib");
     }
     public void YOLO(View Button){
-
         if (startYolo == false){
 
             startYolo = true;
 
             if (firstTimeYolo == false){
                 firstTimeYolo = true;
-                String tinyYoloCfg = Environment.getExternalStorageDirectory() + "/dnns/yolov3-tiny.cfg" ;
-                String tinyYoloWeights = Environment.getExternalStorageDirectory() + "/dnns/yolov3-tiny.weights";
+                String tinyYoloCfg = getPath("yolov3-tiny.cfg",this);
+                String tinyYoloWeights = getPath("yolov3-tiny.weights",this);
 
                 tinyYolo = Dnn.readNetFromDarknet(tinyYoloCfg, tinyYoloWeights);
             }
@@ -72,9 +79,31 @@ public class MainActivity extends AppCompatActivity
             startYolo = false;
         }
     }
+    private static String getPath(String file, Context context){
+        AssetManager assetManager=context.getAssets();
+        BufferedInputStream inputStream=null;
+
+        try{
+            //Read data from assets.
+            inputStream = new BufferedInputStream(assetManager.open(file));
+            byte[] data=new byte[inputStream.available()];
+            inputStream.read(data);
+            inputStream.close();
+            //CreateCopyFileInStorage.
+            File outFile=new File(context.getFilesDir(),file);
+            FileOutputStream os=new FileOutputStream(outFile);
+            os.write(data);
+            os.close();
+            //Return a path to file which may be read in common way.
+            return outFile.getAbsolutePath();
+        }catch (IOException ex){
+            ex.printStackTrace();
+        }
+        return "";
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        super.onCreate(savedInstanceState);//상위 클래스의 onCreatefmf qnffjdhsek.
         setContentView(R.layout.activity_main);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -109,14 +138,17 @@ public class MainActivity extends AppCompatActivity
     }
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+//openCV에서 제공하는 모듈을 사용하여 이미지 프로세싱을 진행
 
         Mat frame = inputFrame.rgba();
 
         if (startYolo == true) {
-
+//Improc을 이용해 이미지 프로세싱. rgba를 rgb로 컬러체계변환
             Imgproc.cvtColor(frame, frame, Imgproc.COLOR_RGBA2RGB);
 
-
+//blob이란 input image가 mean subtraction, normalizing, and channel swapping을 거치고 난 후를 말한다.
+            //Dnn.blobFromImage를 이용하여 이미지 픽셀의 평균값을 계산하여 제외하고 스케일링을 하고 또 채널 스왑(red와 blue)을 진행합니다.
+            //현재는 128x128로 스케일링하고 채널 스왑은 하지 않습니다. 생성된 4-dimensional blob 값을 imageBlob에 할당합니다.
 
             Mat imageBlob = Dnn.blobFromImage(frame, 0.00392, new Size(416,416),new Scalar(0, 0, 0),/*swapRB*/false, /*crop*/false);
 
@@ -124,13 +156,15 @@ public class MainActivity extends AppCompatActivity
             tinyYolo.setInput(imageBlob);
 
 
-
+//cfg파일에서 yolo layer number를 확인하여 이를 순전파에 넣어줍니다.
+            //yolov3의 경우 yolo layer가 ㅏ3개임으로 initialCapacity를 3으로 줍니다.
             java.util.List<Mat> result = new java.util.ArrayList<Mat>(2);
-
+//List<String> outBlobNames = getOutPutNames(tinyYolo);
             List<String> outBlobNames = new java.util.ArrayList<>();
-            outBlobNames.add(0, "yolo_16");
-            outBlobNames.add(1, "yolo_23");
-
+            outBlobNames.add(0, "yolo_82");
+            outBlobNames.add(1, "yolo_94");
+            outBlobNames.add(2,"yolo_106");
+//순전파 진행
             tinyYolo.forward(result,outBlobNames);
 
 
@@ -208,10 +242,11 @@ public class MainActivity extends AppCompatActivity
 
 
 
-                Dnn.NMSBoxes(boxes, confidences, confThreshold, nmsThresh, indices);
+                //Detection후 후처리 과정
+                Dnn.NMSBoxes(boxes, confidences, confThreshold, nmsThresh, indices);//Non-Maximu-Suprresion을 이용하여 동일 개체에 대한 다양한 결과중 가장 최선의 결과만 남깁니다.
 
 
-                // Draw result boxes:
+                // Draw result boxes: 결과 박스를 그려준다. 결과에 라벨 이름을 그려주고 이미지에 opencv의 rectangle함수를 사용하여 사각형 박스를 그려준다.
                 int[] ind = indices.toArray();
                 for (int i = 0; i < ind.length; ++i) {
 
@@ -231,8 +266,14 @@ public class MainActivity extends AppCompatActivity
 
 
 
-                    Imgproc.putText(frame,cocoNames.get(idGuy) + " " + intConf + "%",box.tl(),Imgproc.FONT_HERSHEY_SIMPLEX, 2, new Scalar(255,255,0),2);
+                    //opencv의 이미지 프로세싱 진행
+                    //putText를 이용하여 label의 이름을 입력
+                    Imgproc.putText(frame,cocoNames.get(idGuy) + " " + intConf + "%",box.tl(),Core.FONT_HERSHEY_SIMPLEX, 2, new Scalar(255,255,0),2);
+                    //위의 cocoNames 주석처리 밑의 코드로 변경하여 이름이 아닌 숫자로 구분하여 detection 확인
+                    //Imgproc.putText(frame,idGuy+""+intConf+"%",box.tl(),Core.FONT_GERSHEY_SIMPLEX,2,new Scalar(255,255,0),2);
 
+                    //opencv의 이미지 프로세싱을 진행한다.
+                    //rectangle을 이용하여 사각형을 그린다.
                     Imgproc.rectangle(frame, box.tl(), box.br(), new Scalar(255, 0, 0), 2);
 
                 }
@@ -248,8 +289,8 @@ public class MainActivity extends AppCompatActivity
 
         if (startYolo == true){
 
-            String tinyYoloCfg = Environment.getExternalStorageDirectory() + "/dnns/yolov3-tiny.cfg" ;
-            String tinyYoloWeights = Environment.getExternalStorageDirectory() + "/dnns/yolov3-tiny.weights";
+            String tinyYoloCfg = getPath("yolov3-tiny.cfg",this);
+            String tinyYoloWeights = getPath("yolov3-tiny.weights",this);
 
             tinyYolo = Dnn.readNetFromDarknet(tinyYoloCfg, tinyYoloWeights);
 
@@ -322,7 +363,7 @@ public class MainActivity extends AppCompatActivity
         }
         for (CameraBridgeViewBase cameraBridgeViewBase: cameraViews) {
             if (cameraBridgeViewBase != null) {
-                cameraBridgeViewBase.setCameraPermissionGranted();
+                //cameraBridgeViewBase.setCameraPermissionGranted();
             }
         }
     }
@@ -374,5 +415,5 @@ public class MainActivity extends AppCompatActivity
         });
         builder.create().show();
     }
-    
+
 }

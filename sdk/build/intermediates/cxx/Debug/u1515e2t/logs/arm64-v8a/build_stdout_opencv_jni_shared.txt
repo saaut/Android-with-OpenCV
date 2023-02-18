@@ -1,2 +1,0 @@
-ninja: Entering directory `C:\Androidstudio\Camera_java-master\sdk\.cxx\Debug\u1515e2t\arm64-v8a'
-ninja: no work to do.
