@@ -12,6 +12,12 @@ set(pathLIBOPENCV_JAVA ${pathOPENCV}/native/libs/${ANDROID_ABI}/libopencv_java4.
 set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 
+SET(OpenCV_DIR /usr/lib64/cmake/opencv4)
+
+SET(OpenCV_INCLUDE_DIRS "/usr/lib64;/usr/lib;/usr/include/opencv4;/usr/lib64/cmake/opencv4")
+
+SET(OpenCV_LIB_DIR "/usr/lib64")
+
 include_directories(${pathOPENCV}/native/jni/include)
 
 
