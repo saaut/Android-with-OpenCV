@@ -268,7 +268,7 @@ public class MainActivity extends AppCompatActivity
 
                     //opencv의 이미지 프로세싱 진행
                     //putText를 이용하여 label의 이름을 입력
-                    Imgproc.putText(frame,cocoNames.get(idGuy) + " " + intConf + "%",box.tl(),Core.FONT_HERSHEY_SIMPLEX, 2, new Scalar(255,255,0),2);
+                    Imgproc.putText(frame,cocoNames.get(idGuy) + " " + intConf + "%",box.tl(),Imgproc.FONT_HERSHEY_SIMPLEX, 2, new Scalar(255,255,0),2);
                     //위의 cocoNames 주석처리 밑의 코드로 변경하여 이름이 아닌 숫자로 구분하여 detection 확인
                     //Imgproc.putText(frame,idGuy+""+intConf+"%",box.tl(),Core.FONT_GERSHEY_SIMPLEX,2,new Scalar(255,255,0),2);
 

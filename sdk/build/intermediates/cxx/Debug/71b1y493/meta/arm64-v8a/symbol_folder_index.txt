@@ -1,0 +1,1 @@
+C:\Androidstudio\Camera_java-master\sdk\build\intermediates\cxx\Debug\71b1y493\obj\arm64-v8a

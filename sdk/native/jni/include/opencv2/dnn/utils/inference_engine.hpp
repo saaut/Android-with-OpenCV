@@ -11,18 +11,22 @@
 #include "../dnn.hpp"
 
 namespace cv { namespace dnn {
-CV__DNN_EXPERIMENTAL_NS_BEGIN
+CV__DNN_INLINE_NS_BEGIN
 
 
 /* Values for 'OPENCV_DNN_BACKEND_INFERENCE_ENGINE_TYPE' parameter */
+/// @deprecated
 #define CV_DNN_BACKEND_INFERENCE_ENGINE_NN_BUILDER_API     "NN_BUILDER"
+/// @deprecated
 #define CV_DNN_BACKEND_INFERENCE_ENGINE_NGRAPH             "NGRAPH"
 
 /** @brief Returns Inference Engine internal backend API.
  *
  * See values of `CV_DNN_BACKEND_INFERENCE_ENGINE_*` macros.
  *
- * Default value is controlled through `OPENCV_DNN_BACKEND_INFERENCE_ENGINE_TYPE` runtime parameter (environment variable).
+ * `OPENCV_DNN_BACKEND_INFERENCE_ENGINE_TYPE` runtime parameter (environment variable) is ignored since 4.6.0.
+ *
+ * @deprecated
  */
 CV_EXPORTS_W cv::String getInferenceEngineBackendType();
 
@@ -31,6 +35,8 @@ CV_EXPORTS_W cv::String getInferenceEngineBackendType();
  * See values of `CV_DNN_BACKEND_INFERENCE_ENGINE_*` macros.
  *
  * @returns previous value of internal backend API
+ *
+ * @deprecated
  */
 CV_EXPORTS_W cv::String setInferenceEngineBackendType(const cv::String& newBackendType);
 
@@ -65,7 +71,12 @@ CV_EXPORTS_W cv::String getInferenceEngineVPUType();
  */
 CV_EXPORTS_W cv::String getInferenceEngineCPUType();
 
-CV__DNN_EXPERIMENTAL_NS_END
+/** @brief Release a HDDL plugin.
+ */
+CV_EXPORTS_W void releaseHDDLPlugin();
+
+
+CV__DNN_INLINE_NS_END
 }} // namespace
 
 #endif // OPENCV_DNN_UTILS_INF_ENGINE_HPP

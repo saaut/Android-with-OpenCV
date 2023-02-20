@@ -53,9 +53,7 @@
 #include "opencv2/core/traits.hpp"
 #include "opencv2/core/saturate.hpp"
 
-#ifdef CV_CXX11
 #include <initializer_list>
-#endif
 
 namespace cv
 {
@@ -142,9 +140,7 @@ public:
          _Tp v12, _Tp v13, _Tp v14, _Tp v15); //!< 1x16, 4x4 or 16x1 matrix
     explicit Matx(const _Tp* vals); //!< initialize from a plain array
 
-#ifdef CV_CXX11
     Matx(std::initializer_list<_Tp>); //!< initialize from an initializer list
-#endif
 
     CV_NODISCARD_STD static Matx all(_Tp alpha);
     CV_NODISCARD_STD static Matx zeros();
@@ -371,13 +367,19 @@ public:
     Vec(_Tp v0, _Tp v1, _Tp v2, _Tp v3, _Tp v4, _Tp v5, _Tp v6, _Tp v7, _Tp v8, _Tp v9, _Tp v10, _Tp v11, _Tp v12, _Tp v13); //!< 14-element vector constructor
     explicit Vec(const _Tp* values);
 
-#ifdef CV_CXX11
     Vec(std::initializer_list<_Tp>);
-#endif
 
     Vec(const Vec<_Tp, cn>& v);
 
     static Vec all(_Tp alpha);
+    static Vec ones();
+    static Vec randn(_Tp a, _Tp b);
+    static Vec randu(_Tp a, _Tp b);
+    static Vec zeros();
+#ifdef CV_CXX11
+    static Vec diag(_Tp alpha) = delete;
+    static Vec eye() = delete;
+#endif
 
     //! per-element multiplication
     Vec mul(const Vec<_Tp, cn>& v) const;
@@ -673,13 +675,20 @@ Matx<_Tp,m,n>::Matx(_Tp v0, _Tp v1, _Tp v2, _Tp v3, _Tp v4, _Tp v5, _Tp v6, _Tp 
     for(int i = 16; i < channels; i++) val[i] = _Tp(0);
 }
 
+// WARNING: unreachable code using Ninja
+#if defined _MSC_VER && _MSC_VER >= 1920
+#pragma warning(push)
+#pragma warning(disable: 4702)
+#endif
 template<typename _Tp, int m, int n> inline
 Matx<_Tp, m, n>::Matx(const _Tp* values)
 {
     for( int i = 0; i < channels; i++ ) val[i] = values[i];
 }
+#if defined _MSC_VER && _MSC_VER >= 1920
+#pragma warning(pop)
+#endif
 
-#ifdef CV_CXX11
 template<typename _Tp, int m, int n> inline
 Matx<_Tp, m, n>::Matx(std::initializer_list<_Tp> list)
 {
@@ -690,7 +699,6 @@ Matx<_Tp, m, n>::Matx(std::initializer_list<_Tp> list)
         val[i++] = elem;
     }
 }
-#endif
 
 template<typename _Tp, int m, int n> inline
 Matx<_Tp, m, n> Matx<_Tp, m, n>::all(_Tp alpha)
@@ -1033,11 +1041,9 @@ template<typename _Tp, int cn> inline
 Vec<_Tp, cn>::Vec(const _Tp* values)
     : Matx<_Tp, cn, 1>(values) {}
 
-#ifdef CV_CXX11
 template<typename _Tp, int cn> inline
 Vec<_Tp, cn>::Vec(std::initializer_list<_Tp> list)
     : Matx<_Tp, cn, 1>(list) {}
-#endif
 
 template<typename _Tp, int cn> inline
 Vec<_Tp, cn>::Vec(const Vec<_Tp, cn>& m)
@@ -1061,6 +1067,18 @@ Vec<_Tp, cn> Vec<_Tp, cn>::all(_Tp alpha)
     Vec v;
     for( int i = 0; i < cn; i++ ) v.val[i] = alpha;
     return v;
+}
+
+template<typename _Tp, int cn> inline
+Vec<_Tp, cn> Vec<_Tp, cn>::ones()
+{
+    return Vec::all(1);
+}
+
+template<typename _Tp, int cn> inline
+Vec<_Tp, cn> Vec<_Tp, cn>::zeros()
+{
+    return Vec::all(0);
 }
 
 template<typename _Tp, int cn> inline
