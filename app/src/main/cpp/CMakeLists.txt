@@ -7,26 +7,14 @@ cmake_minimum_required(VERSION 3.4.1)
 
 set(pathPROJECT C:/Androidstudio/Camera_java-master) # 수정필요
 set(pathOPENCV ${pathPROJECT}/sdk) # 수정 필요
-set(pathLIBOPENCV_JAVA ${pathOPENCV}/native/libs/${ANDROID_ABI}/libopencv_java4.so)
+set(pathLIBOPENCV_JAVA ${pathOPENCV}/native/libs/${ANDROID_ABI}/libopencv_java3.so)
 
 set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 
-SET(OpenCV_DIR /usr/lib64/cmake/opencv4)
-
-SET(OpenCV_INCLUDE_DIRS "/usr/lib64;/usr/lib;/usr/include/opencv4;/usr/lib64/cmake/opencv4")
-
-SET(OpenCV_LIB_DIR "/usr/lib64")
-
 include_directories(${pathOPENCV}/native/jni/include)
 
-
-# Creates and names a library, sets it as either STATIC
-# or SHARED, and provides the relative paths to its source code.
-# You can define multiple libraries, and CMake builds them for you.
-# Gradle automatically packages shared libraries with your APK.
-
-add_library( # Sets the name of the library.
+add_library(
         native-lib
 
         # Sets the library as a shared library.
@@ -55,16 +43,12 @@ find_library( # Sets the name of the path variable.
         # you want CMake to locate.
         log )
 
-find_library( android-lib android)
-
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
         native-lib
-
-        ${android-lib}
 
         lib_opencv
 

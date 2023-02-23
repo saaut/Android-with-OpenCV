@@ -31,9 +31,8 @@
 #ifndef OPENCV_FLANN_INDEX_TESTING_H_
 #define OPENCV_FLANN_INDEX_TESTING_H_
 
-//! @cond IGNORED
-
 #include <cstring>
+#include <cassert>
 #include <cmath>
 
 #include "matrix.h"
@@ -93,7 +92,7 @@ float search_with_ground_truth(NNIndex<Distance>& index, const Matrix<typename D
     if (matches.cols<size_t(nn)) {
         Logger::info("matches.cols=%d, nn=%d\n",matches.cols,nn);
 
-        FLANN_THROW(cv::Error::StsError, "Ground truth is not computed for as many neighbors as requested");
+        throw FLANNException("Ground truth is not computed for as many neighbors as requested");
     }
 
     KNNResultSet<DistanceType> resultSet(nn+skipMatches);
@@ -246,6 +245,7 @@ void test_index_precisions(NNIndex<Distance>& index, const Matrix<typename Dista
     float p2;
 
     int c1 = 1;
+    float p1;
 
     float time;
     DistanceType dist;
@@ -269,6 +269,7 @@ void test_index_precisions(NNIndex<Distance>& index, const Matrix<typename Dista
         precision = precisions[i];
         while (p2<precision) {
             c1 = c2;
+            p1 = p2;
             c2 *=2;
             p2 = search_with_ground_truth(index, inputData, testData, matches, nn, c2, time, dist, distance, skipMatches);
             if ((maxTime> 0)&&(time > maxTime)&&(p2<precision)) return;
@@ -313,7 +314,5 @@ void test_index_precisions(NNIndex<Distance>& index, const Matrix<typename Dista
 }
 
 }
-
-//! @endcond
 
 #endif //OPENCV_FLANN_INDEX_TESTING_H_
